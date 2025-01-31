@@ -137,6 +137,43 @@
           </div>
 </section>
 
+<section id="login">
+    <div class="container my-4 " style=" background: url('img/back.jpg') center/cover no-repeat fixed;">
+        <header class="section-header " style="text-align: center; margin-bottom: 30;
+        color: green;">
+        <h3>VUVA COMMUNITY<h3>
+            <p>Join our community and get access to exclusive deals, offers and more</p>
+            <p>We have built a large pool of knowledge that we apply</br> to deliver solutions</p>
+        </header>
+        <div class="row d-flex">
+            <div class="col-md-6 offset-md-3">
+                <div class="card" style="background-color: #f7f7f7;
+                padding: 20px;
+                border-radius: 20px;
+                box-shadow: 0 0 10px rgba(0,0,0,0);
+                margin-top: 50px;">
+                <a href="login.php">Login</a>
+            </div>
+
+        </div>
+        <div class="row d-flex">
+            <div class="col-md-6 offset-md-3">
+                <div class="card" style=" color: green; background-color: #f7f7f7;
+                padding: 20px;
+                
+                border-radius: 20px;
+                box-shadow: 0 0 10px rgba(0,0,0,0);
+                margin-top: 50px;">
+                <a href="registration.php">Register</a>
+                
+            </div>
+
+        </div>
+
+
+    </div>
+</section>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>  
 </body>

@@ -1,0 +1,29 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: grey;
+    border: none;
+    
+    color: white;
+}
+
+.btn-primary {
+    background-color: green;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: green;
+}
+
+.btn-warning, .btn-danger {
+    margin-right: 5px;
+}
