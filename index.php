@@ -138,9 +138,9 @@
 </section>
 
 <section id="login">
-    <div class="container my-4 " style=" background: url('img/back.jpg') center/cover no-repeat fixed;">
-        <header class="section-header " style="text-align: center; margin-bottom: 30;
-        color: green;">
+<div class="container my-4" style="background: url('img/nike.jpg') center/cover no-repeat fixed; border-radius: 20px; overflow: hidden;">
+    <header class="section-header" style="text-align: center; margin-bottom: 30px; color: black;">
+        <!-- Your header content here -->
         <h3>VUVA COMMUNITY<h3>
             <p>Join our community and get access to exclusive deals, offers and more</p>
             <p>We have built a large pool of knowledge that we apply</br> to deliver solutions</p>

@@ -1,78 +1,96 @@
+<?php
+session_start();
+require 'db.php';
+
+if (!isset($_SESSION['id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+// Fetch posts by the logged-in agent
+$agent_id = $_SESSION['id'];
+$stmt = $pdo->prepare('SELECT posts.*, category.category_name FROM posts JOIN category ON posts.category_id = category.id WHERE posts.agent_id = ?');
+$stmt->execute([$agent_id]);
+$posts = $stmt->fetchAll();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="theme.css">
+    <title>Worker Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: green;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .logout {
+            float: right;
+            margin-right: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Worker Dashboard</h1>
-
-        <!-- Create Post Form -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>Create New Post</h5>
-            </div>
-            <div class="card-body">
-                <form id="createPostForm" action="create_post.php" method="POST" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="postImage" class="form-label">Upload Image</label>
-                        <input type="file" class="form-control" id="postImage" name="post_image" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="category" class="form-label">Category</label>
-                        <select class="form-select" id="category" name="category_id" required>
-                            <!-- Categories will be dynamically populated from the database -->
-                            <option value="1">Jackets</option>
-                            <option value="2">Shoes</option>
-                            <option value="1">shirts</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create Post</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Display Posts -->
-        <div class="card">
-            <div class="card-header">
-                <h5>All Posts</h5>
-            </div>
-            <div class="card-body">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Image</th>
-                            <th>Category</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="postsTable">
-                        <!-- Posts will be dynamically populated from the database -->
-                        <tr>
-                            <td>1</td>
-                            <td><img src="img/trial4.jpg" alt="Post Image" width="100"></td>
-                            <td>jackets</td>
-                            <td>
-                                <button class="btn btn-sm btn-warning">Edit</button>
-                                <button class="btn btn-sm btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="header">
+        <h1>Vuva Agent Dashboard</h1>
+        <a class="logout" href="logout.php">Logout</a>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
-    <script src="scripts.js"></script>
+    <div class="container">
+    <h2>Your Posts</h2>
+    <a href="create_post.php">Create New Post</a>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Uploads</th>
+            <th>Category</th>
+            <th>Action</th>
+        </tr>
+        <?php foreach ($posts as $post): ?>
+        <tr>
+            <td><?= $post['id'] ?></td>
+            <td>
+                <?php if (!empty($post['uploads'])): ?>
+                    <!-- If uploads contains a file path -->
+                    <img src="uploads/<?= $post['uploads'] ?>" alt="Uploaded Image" style="max-width: 100px; max-height: 100px;">
+                <?php else: ?>
+                    No Image
+                <?php endif; ?>
+            </td>
+            <td><?= $post['category_name'] ?></td>
+            <td>
+                <a href="edit.php?id=<?= $post['id'] ?>">Edit</a>
+                <a href="delete.php?id=<?= $post['id'] ?>" onclick="return confirm('Are you sure you want to delete this post?')">Delete</a>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </table>
+</div>
 </body>
 </html>
