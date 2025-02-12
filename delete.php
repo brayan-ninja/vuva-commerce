@@ -35,7 +35,7 @@ if (isset($_GET['id'])) {
     }
 
     // Redirect back to the dashboard
-    header("Location: dashboard.php");
+    header("Location: workerdashboard.php");
     exit;
 } else {
     die("Invalid request.");

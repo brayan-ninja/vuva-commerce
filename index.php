@@ -7,6 +7,50 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <title>vuva</title>
+    <style>
+       .category-title {
+            background-color: #28a745; /* Green */
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .product-price {
+            background-color: #f8f9fa; /* Light grey */
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #28a745; /* Green */
+        }
+        .footer {
+            background-color: #333;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .footer a {
+            color: #28a745; /* Green */
+            text-decoration: none;
+        }
+        .footer a:hover {
+            color: #218838; /* Darker green */
+        }
+      </style>
 </head>
 <body>
 <section id="home">
@@ -173,6 +217,127 @@
 
     </div>
 </section>
+
+ <!-- Products Section -->
+ <section id="products" class="container my-5">
+        <header class="section-header text-center mb-5">
+            <h3>Our Products</h3>
+            <p>Explore our wide range of products in different categories.</p>
+        </header>
+
+        <?php
+        // Fetch products from the database grouped by category
+        require 'db.php';
+        $categories = $pdo->query("SELECT * FROM category")->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($categories as $category) {
+            echo '<div class="mb-5">';
+            echo '<div class="category-title">' . htmlspecialchars($category['category_name']) . '</div>';
+            echo '<div class="row">';
+
+            // Fetch products for this category
+            $stmt = $pdo->prepare("SELECT * FROM posts WHERE category_id = ?");
+            $stmt->execute([$category['id']]);
+            $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($products)) {
+                echo '<div class="col-12 text-center"><p>No products found in this category.</p></div>';
+            } else {
+                foreach ($products as $product) {
+                    echo '<div class="col-md-3 mb-4">';
+                    echo '<div class="product-card">';
+                    echo '<img src="uploads/' . htmlspecialchars($product['uploads']) . '" alt="' . htmlspecialchars($product['uploads']) . '">';
+                    echo '<div class="product-price">$' . htmlspecialchars($product['price']) . '</div>';
+                    echo '</div>';
+                    echo '</div>';
+                }
+            }
+
+            echo '</div>';
+            echo '</div>';
+        }
+        ?>
+    </section>
+    <section id="contact us">
+    <div class="container mt-5">
+    <div class="row">
+        <!-- Contact Form -->
+        <div class="col-md-6">
+            <h2>Contact Us</h2>
+            <form>
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea class="form-control" id="message" rows="4" placeholder="Your message" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+
+        <!-- Embedded Map -->
+        <div class="col-md-6">
+            <h2>Our Location</h2>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509198!2d144.9537353153164!3d-37.81627997975157!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad642af0f0f0f0f%3A0x5045675218ce6e0!2sVuva%20Fashion!5e0!3m2!1sen!2sau!4v1616161616161!5m2!1sen!2sau" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+    </div>
+
+    <!-- FAQs Section -->
+    <div class="mt-5">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq">
+            <h5>1. What is the latest fashion trend?</h5>
+            <p>The latest fashion trends include oversized clothing, vibrant colors, and sustainable materials.</p>
+        </div>
+        <div class="faq">
+            <h5>2. How do I choose the right outfit for an occasion?</h5>
+            <p>Consider the dress code, the weather, and your personal style when choosing an outfit.</p>
+        </div>
+        <div class="faq">
+            <h5>3. Where can I find fashion inspiration?</h5>
+            <p>Fashion inspiration can be found on social media platforms, fashion blogs, and magazines.</p>
+        </div>
+        <div class="faq">
+            <h5>4. How do I take care of my clothes?</h5>
+            <p>Follow the care labels, wash clothes in cold water, and avoid excessive drying to maintain their quality.</p>
+        </div>
+    </div>
+</div>
+      <section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>About Us</h5>
+                    <p>Vuva is your one-stop shop for the latest trends in clothing, electronics, and accessories.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="">Home</a></li>
+                        <li><a href="">Products</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <p>Email: info@vuva.com</p>
+                    <p>Phone: +123 456 7890</p>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <p>&copy; 2025 Vuva. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>  

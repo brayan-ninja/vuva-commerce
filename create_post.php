@@ -10,13 +10,16 @@ if (!isset($_SESSION['id'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $uploads = $_POST['uploads'];
     $category_id = $_POST['category_id'];
+    $price = $_POST['price']; // Get the price from the form
     $agent_id = $_SESSION['id'];
 
-    $stmt = $pdo->prepare('INSERT INTO posts (agent_id, uploads, category_id) VALUES (:agent_id, :uploads, :category_id)');
+    // Insert the post into the database
+    $stmt = $pdo->prepare('INSERT INTO posts (agent_id, uploads, category_id, price) VALUES (:agent_id, :uploads, :category_id, :price)');
     $stmt->execute([
         'agent_id' => $agent_id,
         'uploads' => $uploads,
-        'category_id' => $category_id
+        'category_id' => $category_id,
+        'price' => $price // Add price to the query
     ]);
 
     header('Location: workerdashboard.php');
@@ -78,18 +81,22 @@ $categories = $stmt->fetchAll();
         <h1>Create Post</h1>
     </div>
     <div class="container">
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             <div class="form-group">
-            <label for="uploads">Upload Image</label>
-            <input type="file" name="uploads" id="uploads" accept="image/*" required>
+                <label for="uploads">Upload Image</label>
+                <input type="file" name="uploads" id="uploads" accept="image/*" required>
             </div>
             <div class="form-group">
                 <label for="category_id">Category</label>
                 <select name="category_id" id="category_id" required>
                     <?php foreach ($categories as $category): ?>
-                    <option value="<?= $category['id'] ?>"><?= $category['category_name'] ?></option>
+                        <option value="<?= $category['id'] ?>"><?= $category['category_name'] ?></option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+            <div class="form-group">
+                <label for="price">Price</label>
+                <input type="number" name="price" id="price" step="0.01" min="0" required>
             </div>
             <div class="form-group">
                 <button type="submit">Create</button>

@@ -29,19 +29,19 @@ if (isset($_GET['id'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $uploads = $_POST['uploads'];
     $category_id = $_POST['category_id'];
+    $price = $_POST['price']; // Get the price from the form
 
     // Update the post in the database
-    $stmt = $pdo->prepare("UPDATE posts SET uploads = ?, category_id = ? WHERE id = ? AND agent_id = ?");
-    $stmt->execute([$uploads, $category_id, $id, $agent_id]);
+    $stmt = $pdo->prepare("UPDATE posts SET uploads = ?, category_id = ?, price = ? WHERE id = ? AND agent_id = ?");
+    $stmt->execute([$uploads, $category_id, $price, $id, $agent_id]);
 
-    header("Location: dashboard.php");
+    header("Location: workerdashboard.php");
     exit;
 }
 
 // Fetch all categories for the dropdown
 $categories = $pdo->query("SELECT * FROM category")->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,7 +75,7 @@ $categories = $pdo->query("SELECT * FROM category")->fetchAll(PDO::FETCH_ASSOC);
             margin-bottom: 8px;
             font-weight: bold;
         }
-        input[type="text"], select {
+        input[type="text"], select, input[type="number"] {
             width: 100%;
             padding: 8px;
             margin-bottom: 15px;
@@ -102,7 +102,7 @@ $categories = $pdo->query("SELECT * FROM category")->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <div class="container">
         <form method="POST">
-        <label for="uploads">Uploads (Image File):</label>
+            <label for="uploads">Uploads (Image File):</label>
             <input type="file" name="uploads" id="uploads">
             <?php if (!empty($post['uploads'])): ?>
                 <p>Current Image: <img src="uploads/<?= htmlspecialchars($post['uploads']) ?>" alt="Current Image" style="max-width: 100px; max-height: 100px;"></p>
@@ -116,6 +116,9 @@ $categories = $pdo->query("SELECT * FROM category")->fetchAll(PDO::FETCH_ASSOC);
                     </option>
                 <?php endforeach; ?>
             </select>
+            <br>
+            <label for="price">Price:</label>
+            <input type="number" name="price" id="price" value="<?= htmlspecialchars($post['price']) ?>" required>
             <br>
             <button type="submit">Update Post</button>
         </form>

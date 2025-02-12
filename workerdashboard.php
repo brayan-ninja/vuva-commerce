@@ -30,8 +30,23 @@ $posts = $stmt->fetchAll();
         .header {
             background-color: green;
             color: white;
-            padding: 10px;
+            padding: 20px;
             text-align: center;
+            position: relative;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .logout {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .logout:hover {
+            text-decoration: underline;
         }
         .container {
             padding: 20px;
@@ -51,9 +66,27 @@ $posts = $stmt->fetchAll();
         th {
             background-color: #f2f2f2;
         }
-        .logout {
-            float: right;
-            margin-right: 20px;
+        a {
+            color: green;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .create-post-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: green;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .create-post-link:hover {
+            background-color: darkgreen;
+        }
+        .action-links a {
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -63,34 +96,35 @@ $posts = $stmt->fetchAll();
         <a class="logout" href="logout.php">Logout</a>
     </div>
     <div class="container">
-    <h2>Your Posts</h2>
-    <a href="create_post.php">Create New Post</a>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Uploads</th>
-            <th>Category</th>
-            <th>Action</th>
-        </tr>
-        <?php foreach ($posts as $post): ?>
-        <tr>
-            <td><?= $post['id'] ?></td>
-            <td>
-                <?php if (!empty($post['uploads'])): ?>
-                    <!-- If uploads contains a file path -->
-                    <img src="uploads/<?= $post['uploads'] ?>" alt="Uploaded Image" style="max-width: 100px; max-height: 100px;">
-                <?php else: ?>
-                    No Image
-                <?php endif; ?>
-            </td>
-            <td><?= $post['category_name'] ?></td>
-            <td>
-                <a href="edit.php?id=<?= $post['id'] ?>">Edit</a>
-                <a href="delete.php?id=<?= $post['id'] ?>" onclick="return confirm('Are you sure you want to delete this post?')">Delete</a>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
-</div>
+        <h2>Your Posts</h2>
+        <a href="create_post.php" class="create-post-link">Create New Post</a>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Uploads</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+            <?php foreach ($posts as $post): ?>
+            <tr>
+                <td><?= $post['id'] ?></td>
+                <td>
+                    <?php if (!empty($post['uploads'])): ?>
+                        <img src="uploads/<?= $post['uploads'] ?>" alt="Uploaded Image" style="max-width: 100px; max-height: 100px;">
+                    <?php else: ?>
+                        No Image
+                    <?php endif; ?>
+                </td>
+                <td><?= $post['category_name'] ?></td>
+                <td><?= htmlspecialchars($post['price']) ?></td>
+                <td class="action-links">
+                    <a href="edit.php?id=<?= $post['id'] ?>">Edit</a>
+                    <a href="?id=<?= $post['id'] ?>" onclick="return confirm('Are you sure you want to delete this post?')">Delete</a>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </table>
+    </div>
 </body>
 </html>
