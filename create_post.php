@@ -7,28 +7,37 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $uploads = $_POST['uploads'];
-    $category_id = $_POST['category_id'];
-    $price = $_POST['price']; // Get the price from the form
-    $agent_id = $_SESSION['id'];
+$agent_id = $_SESSION['id'];
 
-    // Insert the post into the database
-    $stmt = $pdo->prepare('INSERT INTO posts (agent_id, uploads, category_id, price) VALUES (:agent_id, :uploads, :category_id, :price)');
-    $stmt->execute([
-        'agent_id' => $agent_id,
-        'uploads' => $uploads,
-        'category_id' => $category_id,
-        'price' => $price // Add price to the query
-    ]);
-
-    header('Location: workerdashboard.php');
-    exit;
-}
-
-// Fetch categories
+// Fetch categories for the dropdown
 $stmt = $pdo->query('SELECT * FROM category');
 $categories = $stmt->fetchAll();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $category_id = $_POST['category_id'];
+    $price = $_POST['price'];
+    $upload = $_FILES['upload'];
+
+    // Handle file upload
+    if ($upload['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = 'uploads/';
+        $upload_file = $upload_dir . basename($upload['name']);
+
+        // Move the uploaded file to the uploads directory
+        if (move_uploaded_file($upload['tmp_name'], $upload_file)) {
+            // Insert post into the database
+            $stmt = $pdo->prepare('INSERT INTO posts (agent_id, category_id, price, uploads) VALUES (?, ?, ?, ?)');
+            $stmt->execute([$agent_id, $category_id, $price, $upload['name']]);
+
+            header('Location:workerdashboard.php');
+            exit;
+        } else {
+            $error = "Failed to move uploaded file.";
+        }
+    } else {
+        $error = "File upload error.";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -47,8 +56,23 @@ $categories = $stmt->fetchAll();
         .header {
             background-color: green;
             color: white;
-            padding: 10px;
+            padding: 20px;
             text-align: center;
+            position: relative;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .logout {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .logout:hover {
+            text-decoration: underline;
         }
         .container {
             padding: 20px;
@@ -62,44 +86,55 @@ $categories = $stmt->fetchAll();
         }
         .form-group input, .form-group select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 8px;
+            box-sizing: border-box;
         }
         .form-group button {
-            padding: 10px 20px;
+            padding: 10px 15px;
             background-color: green;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: darkgreen;
+        }
+        .error {
+            color: red;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Create Post</h1>
+        <a class="logout" href="logout.php">Logout</a>
     </div>
     <div class="container">
-        <form method="POST" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="uploads">Upload Image</label>
-                <input type="file" name="uploads" id="uploads" accept="image/*" required>
-            </div>
+        <h2>Create New Post</h2>
+        <?php if (isset($error)): ?>
+            <div class="error"><?= $error ?></div>
+        <?php endif; ?>
+        <form action="create_post.php" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="category_id">Category</label>
                 <select name="category_id" id="category_id" required>
                     <?php foreach ($categories as $category): ?>
-                        <option value="<?= $category['id'] ?>"><?= $category['category_name'] ?></option>
+                        <option value="<?= $category['id'] ?>"><?= htmlspecialchars($category['category_name']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div class="form-group">
                 <label for="price">Price</label>
-                <input type="number" name="price" id="price" step="0.01" min="0" required>
+                <input type="text" name="price" id="price" required>
             </div>
             <div class="form-group">
-                <button type="submit">Create</button>
+                <label for="upload">Upload Image</label>
+                <input type="file" name="upload" id="upload" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Create Post</button>
             </div>
         </form>
     </div>

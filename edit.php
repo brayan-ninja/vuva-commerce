@@ -2,46 +2,64 @@
 session_start();
 require 'db.php';
 
-// Redirect to login if the user is not logged in
 if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit;
 }
 
-// Fetch the post data based on the ID
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    $agent_id = $_SESSION['id'];
+// Fetch the post to edit
+$post_id = $_GET['id'];
+$stmt = $pdo->prepare('SELECT * FROM posts WHERE id = :post_id');
+$stmt->execute(['post_id' => $post_id]);
+$post = $stmt->fetch();
 
-    // Ensure the post belongs to the logged-in agent
-    $stmt = $pdo->prepare('SELECT posts.*, category.category_name FROM posts JOIN category ON posts.category_id = category.id WHERE posts.id = ? AND posts.agent_id = ?');
-    $stmt->execute([$id, $agent_id]);
-    $post = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$post) {
-        die("Post not found or you do not have permission to edit this post.");
-    }
-} else {
-    die("Invalid request.");
-}
-
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $uploads = $_POST['uploads'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $post_id = $_POST['post_id'];
     $category_id = $_POST['category_id'];
-    $price = $_POST['price']; // Get the price from the form
+    $price = $_POST['price'];
 
-    // Update the post in the database
-    $stmt = $pdo->prepare("UPDATE posts SET uploads = ?, category_id = ?, price = ? WHERE id = ? AND agent_id = ?");
-    $stmt->execute([$uploads, $category_id, $price, $id, $agent_id]);
+    // Handle file upload if a new file is uploaded
+    if (isset($_FILES['uploads']) && $_FILES['uploads']['error'] == 0) {
+        $uploads_dir = 'uploads/'; // Directory to store uploaded files
+        $file_name = basename($_FILES['uploads']['name']); // Get the file name
+        $file_tmp = $_FILES['uploads']['tmp_name']; // Temporary file path
+        $file_path = $uploads_dir . $file_name; // Full path to store the file
 
-    header("Location: workerdashboard.php");
-    exit;
+        // Move the uploaded file to the uploads directory
+        if (move_uploaded_file($file_tmp, $file_path)) {
+            // Update the database with the new file path
+            $stmt = $pdo->prepare('UPDATE posts SET uploads = :uploads, category_id = :category_id, price = :price WHERE id = :post_id');
+            $stmt->execute([
+                'uploads' => $file_path,
+                'category_id' => $category_id,
+                'price' => $price,
+                'post_id' => $post_id
+            ]);
+
+            header('Location: workerdashboard.php');
+            exit;
+        } else {
+            echo "Failed to move uploaded file.";
+        }
+    } else {
+        // If no new file is uploaded, update only category and price
+        $stmt = $pdo->prepare('UPDATE posts SET category_id = :category_id, price = :price WHERE id = :post_id');
+        $stmt->execute([
+            'category_id' => $category_id,
+            'price' => $price,
+            'post_id' => $post_id
+        ]);
+
+        header('Location: workerdashboard.php');
+        exit;
+    }
 }
 
-// Fetch all categories for the dropdown
-$categories = $pdo->query("SELECT * FROM category")->fetchAll(PDO::FETCH_ASSOC);
+// Fetch categories
+$stmt = $pdo->query('SELECT * FROM category');
+$categories = $stmt->fetchAll();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -64,63 +82,58 @@ $categories = $pdo->query("SELECT * FROM category")->fetchAll(PDO::FETCH_ASSOC);
         .container {
             padding: 20px;
         }
-        form {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        input[type="text"], select, input[type="number"] {
-            width: 100%;
-            padding: 8px;
+        .form-group {
             margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
         }
-        button {
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-group button {
+            padding: 10px 20px;
             background-color: green;
             color: white;
-            padding: 10px 15px;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
-        }
-        button:hover {
-            background-color: darkgreen;
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Edit Post</h1>
-        <a class="logout" href="workerdashboard.php">Back to Dashboard</a>
     </div>
     <div class="container">
-        <form method="POST">
-            <label for="uploads">Uploads (Image File):</label>
-            <input type="file" name="uploads" id="uploads">
-            <?php if (!empty($post['uploads'])): ?>
-                <p>Current Image: <img src="uploads/<?= htmlspecialchars($post['uploads']) ?>" alt="Current Image" style="max-width: 100px; max-height: 100px;"></p>
-            <?php endif; ?>
-            <br>
-            <label for="category_id">Category:</label>
-            <select name="category_id" id="category_id" required>
-                <?php foreach ($categories as $category): ?>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
+            <div class="form-group">
+                <label for="uploads">Upload Image</label>
+                <input type="file" name="uploads" id="uploads" accept="image/*">
+                <p>Current File: <?= basename($post['uploads']) ?></p>
+            </div>
+            <div class="form-group">
+                <label for="category_id">Category</label>
+                <select name="category_id" id="category_id" required>
+                    <?php foreach ($categories as $category): ?>
                     <option value="<?= $category['id'] ?>" <?= $category['id'] == $post['category_id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($category['category_name']) ?>
+                        <?= $category['category_name'] ?>
                     </option>
-                <?php endforeach; ?>
-            </select>
-            <br>
-            <label for="price">Price:</label>
-            <input type="number" name="price" id="price" value="<?= htmlspecialchars($post['price']) ?>" required>
-            <br>
-            <button type="submit">Update Post</button>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="price">Price</label>
+                <input type="number" name="price" id="price" step="0.01" value="<?= $post['price'] ?>" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Update</button>
+            </div>
         </form>
     </div>
 </body>

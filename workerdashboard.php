@@ -120,7 +120,7 @@ $posts = $stmt->fetchAll();
                 <td><?= htmlspecialchars($post['price']) ?></td>
                 <td class="action-links">
                     <a href="edit.php?id=<?= $post['id'] ?>">Edit</a>
-                    <a href="?id=<?= $post['id'] ?>" onclick="return confirm('Are you sure you want to delete this post?')">Delete</a>
+                    <a href="delete.php?id=<?= $post['id'] ?>" onclick="return confirm('Are you sure you want to delete this post?')">Delete</a>
                 </td>
             </tr>
             <?php endforeach; ?>
